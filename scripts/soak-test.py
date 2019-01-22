@@ -40,6 +40,7 @@ class AWS:
         self.aws_boto = boto3
         self.keyname = keyname
         self.pemfile = self.keyname + self.pem_ext
+        self.pempath = "/tmp/" + self.pemfile
 
     def aws_session(self, access_key, secret_access_key, region):
         session = self.aws_boto.Session(aws_access_key_id=access_key,
@@ -53,11 +54,12 @@ class AWS:
 
     def create_instance(self, resource, image_id, instance_type, min=1, max=1, volumesize=20):
         print("INFO Creating AWS instances")
-        with open(self.pemfile,'w') as outfile:
+        with open(self.pempath,'w') as outfile:
             key_pair = resource.create_key_pair(KeyName=self.keyname)
             KeyPairOut = str(key_pair.key_material)
             outfile.write(KeyPairOut)
-        os.chmod(self.pemfile, 0o400)
+        os.chmod(self.pempath, 0o400)
+        print("INFO Pemfile location: {}".format(self.pempath))
         instances = resource.create_instances(
             ImageId=image_id, 
             MinCount=min, 
@@ -119,11 +121,12 @@ def exec_command_ssh(ssh_handle, command):
     for line in data:
         x = line.decode()
         print(x)
-    print("STDERR OF SSH")
     data = stderr.read().splitlines()
-    for line in data:
-        x = line.decode()
-        print(x)
+    if data:
+        print("STDERR OF SSH")
+        for line in data:
+            x = line.decode()
+            print(x)
 
 
 def connect_to_instance(hostnames, pemfile):
@@ -133,8 +136,8 @@ def connect_to_instance(hostnames, pemfile):
         privkey = paramiko.RSAKey.from_private_key_file(pemfile)
         ssh.connect(host,username='ubuntu',pkey=privkey)
         do_filetransfer(ssh, 'scripts/soak-addon.sh','soak-addon.sh')
-        exec_command_ssh(ssh, 'bash ~/soak-addon.sh -j checkout')
         exec_command_ssh(ssh, 'bash ~/soak-addon.sh -j install')
+        exec_command_ssh(ssh, 'bash ~/soak-addon.sh -j checkout')
         ssh.close()
         ssh.connect(host,username='ubuntu',pkey=privkey)
         exec_command_ssh(ssh, 'bash ~/soak-addon.sh -j build')
@@ -154,7 +157,7 @@ def create_setup(args):
         hostnames = aws_provider.get_hostnames(resource, instances)
         print("INFO Created Instances {}, and waiting for isntance to come up".format(instances))
         time.sleep(180)
-        connect_to_instance(hostnames, aws_provider.pemfile)
+        connect_to_instance(hostnames, aws_provider.pempath)
     else:
         print("Unknown cloud provider {}, exiting.".format(cloud_provider))
         sys.exit()
