@@ -1,8 +1,8 @@
 # Cloud provider information
 cloud_provider:
   aws:
-    access_key: AKIAJSYVXKFM3GEKMUHQ
-    secret_access_key: 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
+    access_key: XXXXXX
+    secret_access_key: XXXXX
     region: us-west-2
     keypair: TestKey1
     resource_type: ec2
