@@ -16,7 +16,7 @@ cloud_provider:
 # Jobs to be run
 jobs:
   - build
-  # - k8s_integration_tests
+  - k8s_integration_tests
 
 # Wait for instance to come up
 instance_wait_time: 60
