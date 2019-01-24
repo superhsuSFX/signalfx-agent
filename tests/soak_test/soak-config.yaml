@@ -1,0 +1,22 @@
+# Cloud provider information
+cloud_provider:
+  aws:
+    access_key: AKIAJSYVXKFM3GEKMUHQ
+    secret_access_key: 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
+    region: us-west-2
+    keypair: TestKey1
+    resource_type: ec2
+    image_id: ami-0ea790e761025f9ce
+    instance_type: t2.large
+    volume_size: 50
+    min: 1
+    max: 1
+    username: ubuntu
+
+# Jobs to be run
+jobs:
+  - build
+  # - k8s_integration_tests
+
+# Wait for instance to come up
+instance_wait_time: 60
