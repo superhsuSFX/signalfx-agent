@@ -4,7 +4,7 @@ cloud_provider:
     access_key: "Access Key Here"
     secret_access_key: "Secret Access Key Here"
     region: us-west-2
-    keypair: TestKey1
+    keypair: TestKey
     resource_type: ec2
     image_id: ami-0ea790e761025f9ce
     instance_type: t2.large
@@ -12,6 +12,7 @@ cloud_provider:
     min: 1
     max: 1
     username: ubuntu
+    terminate: true
 
 # Jobs to be run
 jobs:

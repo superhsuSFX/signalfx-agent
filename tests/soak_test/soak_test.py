@@ -16,27 +16,25 @@ class AWS:
         self.pemfile = self.keyname + self.pem_ext
         self.pempath = "/tmp/" + self.pemfile
         self.aws_boto = boto3
-        self.session = self.aws_session()
+        self.aws_session()
+        self.create_instance()
 
     def aws_session(self):
-        session = self.aws_boto.Session(aws_access_key_id=self.aws_config['access_key'],
+        self.session = self.aws_boto.Session(aws_access_key_id=self.aws_config['access_key'],
                                 aws_secret_access_key=self.aws_config['secret_access_key'],
                                 region_name=self.aws_config['region'])
-        return session
 
-    def aws_resource(self, name):
-        resource = self.session.resource(name)
-        return resource
+        self.resource = self.session.resource(self.aws_config['resource_type'])
 
-    def create_instance(self, resource):
+    def create_instance(self):
         print("INFO Creating AWS instances")
         with open(self.pempath,'w') as outfile:
-            key_pair = resource.create_key_pair(KeyName=self.keyname)
-            KeyPairOut = str(key_pair.key_material)
+            self.key_pair = self.resource.create_key_pair(KeyName=self.keyname)
+            KeyPairOut = str(self.key_pair.key_material)
             outfile.write(KeyPairOut)
         os.chmod(self.pempath, 0o400)
         print("INFO Pemfile location: {}".format(self.pempath))
-        instances = resource.create_instances(
+        self.instances = self.resource.create_instances(
             ImageId=self.aws_config['image_id'], 
             MinCount=self.aws_config['min'], 
             MaxCount=self.aws_config['max'],
@@ -73,15 +71,24 @@ class AWS:
                 },
             ]
         )
-        for ins in instances:
+        for ins in self.instances:
             ins.wait_until_running()
-        return instances
+        self.instance_ids = [ins.instance_id for ins in self.instances]
 
-    def get_hostnames(self, resource, instances):
+    def get_hostnames(self):
         print("INFO Fetching AWS instances hostnames")
-        instances_data = resource.instances.filter(Filters=[ {  'Name': 'instance-id',    'Values': [ins.instance_id for ins in instances] } ] )
-        hostnames = [ins.public_dns_name for ins in instances_data]
+        self.instances_collection = self.resource.instances.filter(Filters=[ {  'Name': 'instance-id',    'Values': self.instance_ids } ] )
+        hostnames = [ins.public_dns_name for ins in self.instances_collection]
         return hostnames
+
+    def terminate_instances(self):
+        print("INFO Terminating AWS instances (id's: {})".format(self.instance_ids))
+        for ins in self.instances_collection:
+            ins.terminate()
+        print("INFO Removing key pair (id's: {})".format(self.key_pair))
+        self.key_pair.delete()
+        print("INFO Removing Pem file (path: {})".format(self.pempath))
+        os.remove(self.pempath)
 
 def do_filetransfer(ssh_handle, source, dest):
     """
@@ -137,10 +144,11 @@ def connect_to_instance(config, hostnames, username, pemfile):
         exec_command_ssh(ssh, 'bash ~/soak-addon.sh -j install')
         exec_command_ssh(ssh, 'bash ~/soak-addon.sh -j checkout')
         close_ssh(ssh)
-        ssh = create_ssh(host, username, pemfile)
-        for job in config['jobs']:
-            exec_command_ssh(ssh, 'bash ~/soak-addon.sh -j {}'.format(job))
-        close_ssh(ssh)
+        if config['jobs']:
+            ssh = create_ssh(host, username, pemfile)
+            for job in config['jobs']:
+                exec_command_ssh(ssh, 'bash ~/soak-addon.sh -j {}'.format(job))
+            close_ssh(ssh)
 
 def create_setup(config):
     """
@@ -150,12 +158,12 @@ def create_setup(config):
     if 'aws' in cloud_provider:
         aws_config = cloud_provider['aws']
         aws_provider = AWS(aws_config)
-        resource = aws_provider.aws_resource(aws_config['resource_type'])
-        instances = aws_provider.create_instance(resource)
-        hostnames = aws_provider.get_hostnames(resource, instances)
-        print("INFO Created Instances {}, and waiting for isntance to come up".format(instances))
+        hostnames = aws_provider.get_hostnames()
+        print("INFO Created Instances {}, and waiting for instance to come up".format(aws_provider.instances))
         time.sleep(config['instance_wait_time'])
         connect_to_instance(config, hostnames, aws_config['username'], aws_provider.pempath)
+        if aws_config['terminate']:
+            aws_provider.terminate_instances()
     else:
         print("Unknown cloud provider {} in soak-config, exiting.".format(cloud_provider.keys()))
         sys.exit()
