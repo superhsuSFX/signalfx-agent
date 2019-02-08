@@ -11,9 +11,7 @@ import pytest
 class AWS:
     def __init__(self, aws_config):
         self.aws_config = aws_config
-        self.keyname = aws_config["keypair"]
-        self.pemfile = self.keyname + ".pem"
-        self.pempath = "/tmp/" + self.pemfile
+        self.pempath = "/tmp/" + self.aws_config["keypair"] + ".pem"
         self.instances_collection = []
         self.aws_session()
         self.create_instance()
@@ -30,16 +28,16 @@ class AWS:
     def create_instance(self):
         print("INFO Creating AWS instances")
         with open(self.pempath,"w") as outfile:
-            self.key_pair = self.resource.create_key_pair(KeyName=self.keyname)
+            self.key_pair = self.resource.create_key_pair(KeyName=self.aws_config["keypair"])
             key_pair_out = str(self.key_pair.key_material)
             outfile.write(key_pair_out)
         os.chmod(self.pempath, 0o400)
         print("INFO Pemfile location: {}".format(self.pempath))
-        self.instances = self.resource.create_instances(
+        instances = self.resource.create_instances(
             ImageId=self.aws_config["image_id"],
             MinCount=self.aws_config["min"],
             MaxCount=self.aws_config["max"],
-            KeyName=self.keyname,
+            KeyName=self.aws_config["keypair"],
             InstanceType=self.aws_config["instance_type"],
             BlockDeviceMappings=[
                 {
@@ -72,9 +70,9 @@ class AWS:
                 },
             ]
         )
-        for ins in self.instances:
+        for ins in instances:
             ins.wait_until_running()
-        self.instance_ids = [ins.instance_id for ins in self.instances]
+        self.instance_ids = [ins.instance_id for ins in instances]
 
     def get_hostnames(self):
         print("INFO Fetching AWS instances hostnames")
@@ -162,7 +160,7 @@ def create_setup(config):
         aws_config = cloud_provider["aws"]
         aws_provider = AWS(aws_config)
         hostnames = aws_provider.get_hostnames()
-        print("INFO Created Instances {}, and waiting for instance to come up".format(aws_provider.instances))
+        print("INFO Created Instances {}, and waiting for instance to come up".format(aws_provider.instance_ids))
         time.sleep(config["instance_wait_time"])
         connect_to_instance(config, hostnames, aws_config["username"], aws_provider.pempath)
         if aws_config["terminate"]:
