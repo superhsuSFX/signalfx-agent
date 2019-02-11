@@ -17,9 +17,10 @@ class AWS:
         self.create_instance()
 
     def aws_session(self):
+        access_key, secret_access_key = self.get_aws_keys()
         self.session = boto3.Session(
-            aws_access_key_id=self.aws_config["access_key"],
-            aws_secret_access_key=self.aws_config["secret_access_key"],
+            aws_access_key_id=access_key,
+            aws_secret_access_key=secret_access_key,
             region_name=self.aws_config["region"],
         )
 
@@ -90,6 +91,15 @@ class AWS:
         self.key_pair.delete()
         print("INFO Removing Pem file (path: {})".format(self.pempath))
         os.remove(self.pempath)
+
+    def get_aws_keys(self):
+        access_key = self.aws_config["access_key"]
+        secret_access_key = self.aws_config["secret_access_key"]
+        if access_key in ["$AWS_ACCESS_KEY_ID", "${AWS_ACCESS_KEY_ID}"]:
+            access_key = os.environ['AWS_ACCESS_KEY_ID']
+        if secret_access_key in ["$AWS_SECRET_ACCESS_KEY", "${AWS_SECRET_ACCESS_KEY}"]:
+            secret_access_key = os.environ['AWS_SECRET_ACCESS_KEY']
+        return access_key, secret_access_key
 
 def do_filetransfer(ssh_handle, source, dest):
     """
