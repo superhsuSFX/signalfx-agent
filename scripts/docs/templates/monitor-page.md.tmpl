@@ -15,6 +15,15 @@ The **nested** `{{.yamlName}}` config object has the following fields:
 {{end}}
 {{- end -}}
 
+{{define "metricsHeader"}}
+| Name | Type | Included | Description |
+| ---  | ---  | ---      | ---         |
+{{end}}
+
+{{define "metricEntry"}}
+| `{{.name}}`{{if has . "alias"}}<br>_or_ `{{.alias}}`{{end}} | {{.type}} | {{if .included}}✔{{end}} | {{.description | strings.TrimSpace}} |
+{{end}}
+
 {{ with ds "monitor" }}
 {{ $doc_types := .doc_types -}}
 
@@ -38,17 +47,26 @@ Monitor Type: `{{.monitorType}}`
 This monitor has no configuration options.
 {{ end }}
 
-{{with .metrics -}}
 ## Metrics
 
-The following table lists the metrics available for this monitor. Metrics that are marked as Included are standard metrics and are monitored by default.
+The following table lists the metrics available for this monitor. Metrics that are Included are standard metrics and are monitored by default.
 
-| Name | Type | Included | Description |
-| ---  | ---  | ---    | ---         |
-{{ range . -}}
-| `{{.name}}`{{if has . "alias"}}<br>_or_ `{{.alias}}`{{end}} | {{.type}} | {{if .included}}✔{{end}} | {{.description | strings.TrimSpace}} |
+{{$metrics := .metrics}}
+
+{{- range $group := .groups -}}
+### {{$group.description}}
+Group key: `{{$group.name}}`)
+{{template "metricsHeader"}}
+{{range $metric := $metrics}}
+{{- if eq $group.name $metric.group -}}
+{{template "metricEntry" $metric -}}
+{{- end -}}
 {{end}}
-{{end -}}
+{{else}}
+{{range $metric := $metrics}}
+{{template "metricEntry" $metric -}}
+{{- end -}}
+{{end}}
 
 {{if and .metrics (not .sendAll)}}
 To specify custom metrics you want to monitor, add a `metricsToInclude` filter

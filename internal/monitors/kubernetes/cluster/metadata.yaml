@@ -40,9 +40,30 @@ monitors:
     [kube-state-metrics](https://github.com/kubernetes/kube-state-metrics), and
     sends many of the same metrics, but in a way that is less verbose and better
     fitted for the SignalFx backend.
+  groups:
+  - name: containers
+    description: Containers
+  - name: daemon-sets
+    description: DaemonSets
+  - name: deployments
+    description: Deployments
+  - name: namespaces
+    description: Namespaces
+  - name: nodes
+    description: Nodes
+  - name: pods
+    description: Pods
+  - name: replica-sets
+    description: ReplicaSets
+  - name: replication-controllers
+    description: Replication Controllers
+  - name: resource-quotas
+    description: Resource Quotas
   metrics:
+  # Containers
   - description: Whether a container has passed its readiness probe (0 for no, 1 for
       yes)
+    group: containers
     included: true
     name: kubernetes.container_ready
     type: gauge
@@ -54,80 +75,113 @@ monitors:
       either `== 0`, in which case you can conclude there were no restarts in the
       recent past, or `> 0`, in which case you can conclude there were restarts in
       the recent past, and not try and analyze the value beyond that.
+    group: containers
     included: true
     name: kubernetes.container_restart_count
     type: gauge
+
+  # Daemon Sets
   - description: The number of nodes that are running at least 1 daemon pod and are
       supposed to run the daemon pod
+    group: daemon-sets
     included: true
     name: kubernetes.daemon_set.current_scheduled
     type: gauge
   - description: The total number of nodes that should be running the daemon pod (including
       nodes currently running the daemon pod)
+    group: daemon-sets
     included: true
     name: kubernetes.daemon_set.desired_scheduled
     type: gauge
   - description: The number of nodes that are running the daemon pod, but are not
       supposed to run the daemon pod
+    group: daemon-sets
     included: true
     name: kubernetes.daemon_set.misscheduled
     type: gauge
   - description: The number of nodes that should be running the daemon pod and have
       one or more of the daemon pod running and ready
+    group: daemon-sets
     included: true
     name: kubernetes.daemon_set.ready
     type: gauge
+
+  # Deployments
   - description: Total number of available pods (ready for at least minReadySeconds)
       targeted by this deployment.
+    group: deployments
     included: true
     name: kubernetes.deployment.available
     type: gauge
   - description: Number of desired pods in this deployment
+    group: deployments
     included: true
     name: kubernetes.deployment.desired
     type: gauge
+
+  # Namespaces
   - description: The current phase of namespaces (`1` for _active_ and `0` for _terminating_)
+    group: namespaces
     included: true
     name: kubernetes.namespace_phase
     type: gauge
+
+  # Nodes
   - description: Whether this node is ready (1), not ready (0) or in an unknown state
       (-1)
+    group: nodes
     included: true
     name: kubernetes.node_ready
     type: gauge
+
+  # Pods
   - description: Current phase of the pod (1 - Pending, 2 - Running, 3 - Succeeded,
       4 - Failed, 5 - Unknown)
+    group: pods
     included: true
     name: kubernetes.pod_phase
     type: gauge
+
+  # Replica Sets
   - description: Total number of available pods (ready for at least minReadySeconds)
       targeted by this replica set
+    group: replica-sets
     included: true
     name: kubernetes.replica_set.available
     type: gauge
   - description: Number of desired pods in this replica set
+    group: replica-sets
     included: true
     name: kubernetes.replica_set.desired
     type: gauge
+
+  # Replication Controllers
   - description: Total number of available pods (ready for at least minReadySeconds)
       targeted by this replication controller.
+    group: replication-controllers
     included: true
     name: kubernetes.replication_controller.available
     type: gauge
   - description: Number of desired pods
+    group: replication-controllers
     included: true
     name: kubernetes.replication_controller.desired
     type: gauge
+
+  # Resource Quotas
   - description: The upper limit for a particular resource in a specific namespace.  Will
       only be sent if a quota is specified.  CPU requests/limits will be sent as millicores.
+    group: resource-quotas
     included: true
     name: kubernetes.resource_quota_hard
     type: gauge
   - description: The usage for a particular resource in a specific namespace.  Will
       only be sent if a quota is specified.  CPU requests/limits will be sent as millicores.
+    group: resource-quotas
     included: true
     name: kubernetes.resource_quota_used
     type: gauge
+
   monitorType: kubernetes-cluster
   properties:
   - description: All non-blank labels on a given node will be synced as properties
