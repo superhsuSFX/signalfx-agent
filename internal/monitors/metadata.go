@@ -50,7 +50,8 @@ type MonitorMetadata struct {
 
 // PackageMetadata describes a package directory that may have one or more monitors.
 type PackageMetadata struct {
-	Monitors []MonitorMetadata
+	PackageDir string `json:"packageDir" yaml:"packageDir"`
+	Monitors   []MonitorMetadata
 	// Name of the package in go. If not set defaults to the directory name.
 	GoPackage *string `json:"goPackage" yaml:"goPackage"`
 	// Filesystem path to the package directory.

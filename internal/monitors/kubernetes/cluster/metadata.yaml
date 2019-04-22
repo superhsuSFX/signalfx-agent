@@ -1,5 +1,7 @@
+packageDir: meta
 monitors:
-- dimensions:
+- &kubernetes
+  dimensions:
   - description: The name of the resource that the metric describes
     name: kubernetes_name
   - description: The namespace of the resource that the metric describes
@@ -141,3 +143,124 @@ monitors:
       on that same dimension.
     dimension: kubernetes_pod_uid
     name: <pod label>
+- <<: *kubernetes
+  monitorType: openshift-cluster
+  sendAll: true
+  dimensions:
+  - description: This is always set to `openshift`
+    name: metric_source
+# NOTE: Do not manually update list below. Update gen-metrics.py and rerun.
+  metrics:
+  - description: Hard limit for number of cpu across all namespaces
+    included: false
+    name: openshift.clusterquota.cpu.hard
+    type: gauge
+  - description: Consumed number of cpu across all namespaces
+    included: false
+    name: openshift.clusterquota.cpu.used
+    type: gauge
+  - description: Hard limit for amount of memory across all namespaces
+    included: false
+    name: openshift.clusterquota.memory.hard
+    type: gauge
+  - description: Consumed amount of memory across all namespaces
+    included: false
+    name: openshift.clusterquota.memory.used
+    type: gauge
+  - description: Hard limit for number of pods across all namespaces
+    included: false
+    name: openshift.clusterquota.pods.hard
+    type: gauge
+  - description: Consumed number of pods across all namespaces
+    included: false
+    name: openshift.clusterquota.pods.used
+    type: gauge
+  - description: Hard limit for number of services across all namespaces
+    included: false
+    name: openshift.clusterquota.services.hard
+    type: gauge
+  - description: Consumed number of services across all namespaces
+    included: false
+    name: openshift.clusterquota.services.used
+    type: gauge
+  - description: Hard limit for number of persistentvolumeclaims across all namespaces
+    included: false
+    name: openshift.clusterquota.persistentvolumeclaims.hard
+    type: gauge
+  - description: Consumed number of persistentvolumeclaims across all namespaces
+    included: false
+    name: openshift.clusterquota.persistentvolumeclaims.used
+    type: gauge
+  - description: Hard limit for number of services.nodeports across all namespaces
+    included: false
+    name: openshift.clusterquota.services.nodeports.hard
+    type: gauge
+  - description: Consumed number of services.nodeports across all namespaces
+    included: false
+    name: openshift.clusterquota.services.nodeports.used
+    type: gauge
+  - description: Hard limit for number of services.loadbalancers across all namespaces
+    included: false
+    name: openshift.clusterquota.services.loadbalancers.hard
+    type: gauge
+  - description: Consumed number of services.loadbalancers across all namespaces
+    included: false
+    name: openshift.clusterquota.services.loadbalancers.used
+    type: gauge
+  - description: Hard limit for number of cpu by namespace
+    included: false
+    name: openshift.appliedclusterquota.cpu.hard
+    type: gauge
+  - description: Consumed number of cpu by namespace
+    included: false
+    name: openshift.appliedclusterquota.cpu.used
+    type: gauge
+  - description: Hard limit for amount of memory by namespace
+    included: false
+    name: openshift.appliedclusterquota.memory.hard
+    type: gauge
+  - description: Consumed amount of memory by namespace
+    included: false
+    name: openshift.appliedclusterquota.memory.used
+    type: gauge
+  - description: Hard limit for number of pods by namespace
+    included: false
+    name: openshift.appliedclusterquota.pods.hard
+    type: gauge
+  - description: Consumed number of pods by namespace
+    included: false
+    name: openshift.appliedclusterquota.pods.used
+    type: gauge
+  - description: Hard limit for number of services by namespace
+    included: false
+    name: openshift.appliedclusterquota.services.hard
+    type: gauge
+  - description: Consumed number of services by namespace
+    included: false
+    name: openshift.appliedclusterquota.services.used
+    type: gauge
+  - description: Hard limit for number of persistentvolumeclaims by namespace
+    included: false
+    name: openshift.appliedclusterquota.persistentvolumeclaims.hard
+    type: gauge
+  - description: Consumed number of persistentvolumeclaims by namespace
+    included: false
+    name: openshift.appliedclusterquota.persistentvolumeclaims.used
+    type: gauge
+  - description: Hard limit for number of services.nodeports by namespace
+    included: false
+    name: openshift.appliedclusterquota.services.nodeports.hard
+    type: gauge
+  - description: Consumed number of services.nodeports by namespace
+    included: false
+    name: openshift.appliedclusterquota.services.nodeports.used
+    type: gauge
+  - description: Hard limit for number of services.loadbalancers by namespace
+    included: false
+    name: openshift.appliedclusterquota.services.loadbalancers.hard
+    type: gauge
+  - description: Consumed number of services.loadbalancers by namespace
+    included: false
+    name: openshift.appliedclusterquota.services.loadbalancers.used
+    type: gauge
+  properties: null

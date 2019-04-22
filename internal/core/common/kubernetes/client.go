@@ -9,6 +9,7 @@ import (
 
 	k8s "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 // AuthType describes the type of authentication to use for the K8s API
@@ -22,6 +23,8 @@ const (
 	// AuthTypeServiceAccount means to use the built-in service account that
 	// K8s automatically provisions for each pod.
 	AuthTypeServiceAccount AuthType = "serviceAccount"
+	// AuthTypeKubeConfig uses local credentials like those used by kubectl.
+	AuthTypeKubeConfig AuthType = "kubeConfig"
 )
 
 // APIConfig contains options relevant to connecting to the K8s API
@@ -49,7 +52,8 @@ type APIConfig struct {
 
 // Validate validates the K8s API config
 func (c *APIConfig) Validate() error {
-	if c.AuthType != AuthTypeNone && c.AuthType != AuthTypeTLS && c.AuthType != AuthTypeServiceAccount {
+	if c.AuthType != AuthTypeNone && c.AuthType != AuthTypeTLS && c.AuthType != AuthTypeServiceAccount && c.
+		AuthType != AuthTypeKubeConfig {
 		return errors.New("Invalid authType for kubernetes: " + string(c.AuthType))
 	}
 	if c.AuthType == AuthTypeTLS && (c.ClientCertPath == "" || c.ClientKeyPath == "") {
@@ -59,20 +63,33 @@ func (c *APIConfig) Validate() error {
 	return nil
 }
 
-// MakeClient can take configuration if needed for other types of auth
-func MakeClient(apiConf *APIConfig) (*k8s.Clientset, error) {
+// CreateRestConfig creates an Kubernetes API config from user configuration.
+func CreateRestConfig(apiConf *APIConfig) (*rest.Config, error) {
 	authType := apiConf.AuthType
 
 	var authConf *rest.Config
 	var err error
 
-	host, port := os.Getenv("KUBERNETES_SERVICE_HOST"), os.Getenv("KUBERNETES_SERVICE_PORT")
-	if len(host) == 0 || len(port) == 0 {
-		return nil, fmt.Errorf("unable to load k8s config, KUBERNETES_SERVICE_HOST and KUBERNETES_SERVICE_PORT must be defined")
+	var k8sHost string
+	if authType != AuthTypeKubeConfig {
+		host, port := os.Getenv("KUBERNETES_SERVICE_HOST"), os.Getenv("KUBERNETES_SERVICE_PORT")
+		if len(host) == 0 || len(port) == 0 {
+			return nil, fmt.Errorf("unable to load k8s config, KUBERNETES_SERVICE_HOST and KUBERNETES_SERVICE_PORT must be defined")
+		}
+		k8sHost = "https://" + net.JoinHostPort(host, port)
 	}
-	k8sHost := "https://" + net.JoinHostPort(host, port)
 
 	switch authType {
+	// Mainly for testing purposes
+	case AuthTypeKubeConfig:
+		loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
+		configOverrides := &clientcmd.ConfigOverrides{}
+		authConf, err = clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+			loadingRules, configOverrides).ClientConfig()
+
+		if err != nil {
+			return nil, err
+		}
 	// Mainly for testing purposes
 	case AuthTypeNone:
 		authConf = &rest.Config{
@@ -106,6 +123,15 @@ func MakeClient(apiConf *APIConfig) (*k8s.Clientset, error) {
 	}
 
 	authConf.Insecure = apiConf.SkipVerify
+	return authConf, nil
+}
+
+// MakeClient can take configuration if needed for other types of auth
+func MakeClient(apiConf *APIConfig) (*k8s.Clientset, error) {
+	authConf, err := CreateRestConfig(apiConf)
+	if err != nil {
+		return nil, err
+	}
 
 	client, err := k8s.NewForConfig(authConf)
 	if err != nil {
