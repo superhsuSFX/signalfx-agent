@@ -110,7 +110,8 @@ dev-image:
 ifeq ($(OS),Windows_NT)
 	powershell -Command "& { . $(CURDIR)\scripts\windows\common.ps1; do_docker_build signalfx-agent-dev latest dev-extras }"
 else
-	bash -ec "COLLECTD_VERSION=$(COLLECTD_VERSION) COLLECTD_COMMIT=$(COLLECTD_COMMIT) && source scripts/common.sh && do_docker_build signalfx-agent-dev latest dev-extras"
+	bash -ec "COLLECTD_VERSION=$(COLLECTD_VERSION) COLLECTD_COMMIT=$(COLLECTD_COMMIT) && source scripts/common.sh && do_docker_build signalfx-python-plugins latest python-plugins"
+	bash -ec "COLLECTD_VERSION=$(COLLECTD_VERSION) COLLECTD_COMMIT=$(COLLECTD_COMMIT) DOCKERFILE=dev.Dockerfile && source scripts/common.sh && do_docker_build signalfx-agent-dev latest dev-extras"
 endif
 
 .PHONY: debug

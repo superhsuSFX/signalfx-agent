@@ -28,7 +28,7 @@ do_docker_build() {
 
   docker build \
     -t $image_name:$image_tag \
-    -f $MY_SCRIPT_DIR/../Dockerfile \
+    -f ${DOCKERFILE:-$MY_SCRIPT_DIR/../Dockerfile} \
     --pull \
     --build-arg agent_version=${agent_version} \
     --build-arg GOOS=${operating_system} \
@@ -39,5 +39,5 @@ do_docker_build() {
     --label agent.version=${agent_version} \
     $(extra_cflags_build_arg) \
     $cache_flags \
-    $MY_SCRIPT_DIR/.. 
+    $MY_SCRIPT_DIR/..
 }
