@@ -15,9 +15,9 @@
 
 ### Single Host
 
-Your SignalFx API Token can be obtained from the Organization->Access Token tab in SignalFx.
+Your SignalFx API Token can be obtained from the Organization Settings -> Access Tokens tab in SignalFx.
 
-Certain installation statements include YOUR_SIGNALFX_REALM. If this value is not set, SignalFx assumes your organization is in the us0 realm. To determine if you are in a different realm and need to supply your realm value in those statements, check your profile page in the SignalFx web application.
+Certain installation statements include YOUR_SIGNALFX_REALM. If this value is not set, SignalFx assumes your organization is in the us0 realm. To determine if you are in a different realm and need to supply your realm value in those statements, check your [profile page](https://docs.signalfx.com/en/latest/getting-started/get-around-ui.html#user-profile-avatar-and-color-theme) in the SignalFx web application.
 
 The Smart Agent for Linux contains a Java JRE runtime and a Python runtime, so there are no
 additional dependency requirements. 
@@ -76,11 +76,11 @@ By default, the Smart Agent will send data to the us0 realm. If you are not in t
 ```sh
 signalFxRealm: YOUR_SIGNALFX_REALM
 ```
-To determine if you are in a different realm and need to explicitly set the endpoints, check your profile page in the SignalFx web application.
+To determine if you are in a different realm and need to explicitly set the endpoints, check your [profile page](https://docs.signalfx.com/en/latest/getting-started/get-around-ui.html#user-profile-avatar-and-color-theme) in the SignalFx web application.
 
 ## Next Steps
 
-To install Smart Agent on multiple hosts using configuration management tools or packages, go to the [Integrations page](https://app.signalfx.com/#/integrations), and then click the icon of the tool you want to use. 
+To install Smart Agent on multiple hosts using configuration management tools or packages, go to the Integrations page in SignalFx, and then click the icon of the tool you want to use. 
 
 Additional information on configuration management tools and package installations is [here](/docs/smart-agent-next-steps.md).
 
