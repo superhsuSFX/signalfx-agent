@@ -78,7 +78,7 @@ Monitor Type: `telegraf/sqlserver`
 
 The following table lists the metrics available for this monitor. Metrics that are marked as Included are standard metrics and are monitored by default.
 
-| Name | Type | Included | Description |
+| Name | Type | Default (non-custom) | Description |
 | ---  | ---  | ---    | ---         |
 | `sqlserver_database_io.read_bytes` | gauge |  | Bytes read by the database. |
 | `sqlserver_database_io.read_latency_ms` | gauge |  | Latency in milliseconds reading from the database. |
@@ -201,6 +201,7 @@ The following table lists the metrics available for this monitor. Metrics that a
 | `sqlserver_waitstats.waiting_tasks_count` | gauge |  | Time in milliseconds |
 
 
-
+The agent does not do any built-in filtering of metrics coming out of this
+monitor.
 
 

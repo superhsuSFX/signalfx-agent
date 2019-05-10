@@ -35,7 +35,7 @@ Monitor Type: `collectd/memcached`
 
 The following table lists the metrics available for this monitor. Metrics that are marked as Included are standard metrics and are monitored by default.
 
-| Name | Type | Included | Description |
+| Name | Type | Default (non-custom) | Description |
 | ---  | ---  | ---    | ---         |
 | `df.cache.free` | gauge | ✔ | Unused storage bytes |
 | `df.cache.used` | gauge | ✔ | Current number of bytes used to store items |
@@ -60,33 +60,12 @@ The following table lists the metrics available for this monitor. Metrics that a
 | `ps_cputime.user` | cumulative |  | Total user time for this instance |
 
 
-To specify custom metrics you want to monitor, add a `metricsToInclude` filter
-to the agent configuration, as shown in the code snippet below. The snippet
-lists all available custom metrics. You can copy and paste the snippet into
-your configuration file, then delete any custom metrics that you do not want
-sent.
 
-Note that some of the custom metrics require you to set a flag as well as add
-them to the list. Check the monitor configuration file to see if a flag is
-required for gathering additional metrics.
-
-```yaml
-
-metricsToInclude:
-  - metricNames:
-    - memcached_command.flush
-    - memcached_command.touch
-    - memcached_connections.listen_disabled
-    - memcached_ops.decr_hits
-    - memcached_ops.decr_misses
-    - memcached_ops.incr_hits
-    - memcached_ops.incr_misses
-    - ps_count.threads
-    - ps_cputime.syst
-    - ps_cputime.user
-    monitorType: collectd/memcached
-```
-
-
+### Built in filtering
+This monitor will perform built-in filtering if you are using agent version
+4.7.0+ and have the `enableBuiltInFiltering: true` option set at the top-level
+of your agent config.  See
+[Filtering](https://docs.signalfx.com/en/latest/integrations/agent/filtering.html)
+for more information.
 
 
