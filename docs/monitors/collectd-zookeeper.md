@@ -34,7 +34,7 @@ Monitor Type: `collectd/zookeeper`
 
 The following table lists the metrics available for this monitor. Metrics that are marked as Included are standard metrics and are monitored by default.
 
-| Name | Type | Default (non-custom) | Description |
+| Name | Type | [Bundled](https://docs.signalfx.com/en/latest/admin-guide/usage.html#about-custom-bundled-and-high-resolution-metrics) | Description |
 | ---  | ---  | ---    | ---         |
 | `counter.zk_packets_received` | cumulative | ✔ | Count of the number of ZooKeeper packets received by a server |
 | `counter.zk_packets_sent` | cumulative | ✔ | Count of the number of ZooKeeper packets sent from a server |
