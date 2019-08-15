@@ -19,6 +19,7 @@ func (sw *SignalFxWriter) listenForTraceSpans() {
 	// The only reason this is on the struct and not a local var is so we can
 	// easily get diagnostic metrics from it
 	sw.serviceTracker = sw.startGeneratingHostCorrelationMetrics()
+	sw.sourceTracker = tracetracker.NewSourceTracker(sw.propertyChan)
 	shedRequests := make(chan struct{})
 	shedCompleted := make(chan struct{})
 

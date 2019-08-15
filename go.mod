@@ -169,6 +169,7 @@ require (
 	github.com/vjeantet/grok v1.0.0 // indirect
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2
 	go.etcd.io/etcd v0.0.0-20190321122103-41f7142ff986
+	go.opencensus.io v0.18.1-0.20181204023538-aab39bd6a98b
 	golang.org/x/crypto v0.0.0-20190313024323-a1f597ede03a // indirect
 	golang.org/x/net v0.0.0-20190318221613-d196dffd7c2b // indirect
 	golang.org/x/sync v0.0.0-20181221193216-37e7f081c4d4
