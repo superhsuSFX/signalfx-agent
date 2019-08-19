@@ -89,6 +89,7 @@ type SignalFxWriter struct {
 	dpsReceived             int64
 	dpsFiltered             int64
 	dpsFailedToSend         int64
+	dpsPotentiallyDropped   int64
 	traceSpanRequestsActive int64
 	traceSpansInFlight      int64
 	traceSpansSent          int64
@@ -409,7 +410,11 @@ func (sw *SignalFxWriter) listenForDatapoints() {
 		}
 
 		if lastHighStarted < nextDatapointIdx && bufferedCircuits > startedCircuits {
-			sw.logger.ThrottledWarning(fmt.Sprintf("Datapoint ring buffer overflowed, some datapoints were dropped. Set writer.maxDatapointsBuffered to something higher (currently %d)", bufferSize))
+			newPotentiallyDropped := int64(nextDatapointIdx-lastHighStarted) + (bufferedCircuits-startedCircuits)*int64(bufferSize)
+			if newPotentiallyDropped != sw.dpsPotentiallyDropped {
+				sw.logger.ThrottledWarning(fmt.Sprintf("Datapoint ring buffer overflowed, some datapoints were dropped. Set writer.maxDatapointsBuffered to something higher (currently %d)", bufferSize))
+				sw.dpsPotentiallyDropped = newPotentiallyDropped
+			}
 		}
 		batched++
 

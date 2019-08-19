@@ -67,6 +67,7 @@ func (sw *SignalFxWriter) InternalMetrics() []*datapoint.Datapoint {
 		sfxclient.CumulativeP("sfxagent.datapoints_produced", nil, &sw.dpsReceived),
 		sfxclient.CumulativeP("sfxagent.datapoints_filtered", nil, &sw.dpsFiltered),
 		sfxclient.CumulativeP("sfxagent.datapoints_failed", nil, &sw.dpsFailedToSend),
+		sfxclient.CumulativeP("sfxagent.datapoints_maybe_dropped", nil, &sw.dpsPotentiallyDropped),
 		sfxclient.CumulativeP("sfxagent.events_sent", nil, &sw.eventsSent),
 		sfxclient.Gauge("sfxagent.datapoint_channel_len", nil, int64(len(sw.dpChan))),
 		sfxclient.Gauge("sfxagent.datapoints_in_flight", nil, atomic.LoadInt64(&sw.dpsInFlight)),
