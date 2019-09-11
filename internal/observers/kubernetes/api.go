@@ -255,6 +255,15 @@ func (o *Observer) endpointsInPod(pod *v1.Pod, client *k8s.Clientset, portAnnota
 			continue
 		}
 
+		endpointContainer := &services.Container{
+			ID:      containerID,
+			Names:   []string{containerName},
+			Image:   container.Image,
+			Command: "",
+			State:   containerState,
+			Labels:  pod.Labels,
+		}
+
 		for _, port := range container.Ports {
 			portsSeen[port.ContainerPort] = true
 
@@ -277,21 +286,38 @@ func (o *Observer) endpointsInPod(pod *v1.Pod, client *k8s.Clientset, portAnnota
 			endpoint.PortType = services.PortType(port.Protocol)
 			endpoint.Port = uint16(port.ContainerPort)
 
-			container := &services.Container{
-				ID:      containerID,
-				Names:   []string{containerName},
-				Image:   container.Image,
-				Command: "",
-				State:   containerState,
-				Labels:  pod.Labels,
-			}
-
 			endpoint.AddExtraField("kubernetes_annotations", pod.Annotations)
 
 			endpoints = append(endpoints, &services.ContainerEndpoint{
 				EndpointCore:  *endpoint,
 				AltPort:       0,
-				Container:     *container,
+				Container:     *endpointContainer,
+				Orchestration: *orchestration,
+			})
+		}
+
+		if len(container.Ports) == 0 {
+			// No ports were declared. Create an endpoint with no port that can later be user-defined.
+			id := fmt.Sprintf("%s-%s-%s", pod.Name, pod.UID[:7], container.Name)
+			endpoint := services.NewEndpointCore(id, "", observerType, podDims)
+			//portAnnotations := annotationConfs.FilterByPortOrPortName(port.ContainerPort, port.Name)
+			//monitorType, extraConf, err := configFromAnnotations(container.Name, portAnnotations, pod, client)
+			//if err != nil {
+			//	log.WithFields(log.Fields{
+			//		"error": err,
+			//	}).Error("K8s port has invalid config annotations")
+			//} else {
+			//	endpoint.Configuration = extraConf
+			//	endpoint.MonitorType = monitorType
+			//}
+			endpoint.AddExtraField("kubernetes_annotations", pod.Annotations)
+			endpoint.Host = podIP
+			endpoint.PortType = services.UNKNOWN
+			endpoint.Port = 0
+			endpoints = append(endpoints, &services.ContainerEndpoint{
+				EndpointCore:  *endpoint,
+				AltPort:       0,
+				Container:     *endpointContainer,
 				Orchestration: *orchestration,
 			})
 		}
@@ -329,6 +355,7 @@ func (o *Observer) endpointsInPod(pod *v1.Pod, client *k8s.Clientset, portAnnota
 			Orchestration: *orchestration,
 		})
 	}
+
 	return endpoints
 }
 

@@ -65,6 +65,47 @@ var _ = Describe("Kubernetes Observer", func() {
 		fakeK8s.Close()
 	})
 
+	It("Converts a pod without container ports into stub", func() {
+		fakeK8s.SetInitialList([]runtime.Object{
+			&v1.Pod{
+				TypeMeta: metav1.TypeMeta{
+					Kind:       "Pod",
+					APIVersion: "v1",
+				},
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test1",
+					UID:  "abcdefghij",
+				},
+				Status: v1.PodStatus{
+					Phase: v1.PodRunning,
+					PodIP: "10.0.4.3",
+					ContainerStatuses: []v1.ContainerStatus{
+						{
+							Name:         "container1",
+							RestartCount: 5,
+							State: v1.ContainerState{
+								Running: &v1.ContainerStateRunning{},
+							},
+						},
+					},
+				},
+				Spec: v1.PodSpec{
+					Containers: []v1.Container{
+						{
+							Name: "container1",
+						},
+					},
+				},
+			},
+		})
+
+		startObserver()
+
+		Eventually(func() int { return len(endpoints) }).Should(Equal(1))
+		Expect(endpoints["test1-abcdefg-container1"].Core().Host).To(Equal("10.0.4.3"))
+		Expect(endpoints["test1-abcdefg-container1"].Core().Port).To(Equal(uint16(0)))
+	})
+
 	It("Converts a pod to a set of endpoints", func() {
 		fakeK8s.SetInitialList([]runtime.Object{
 			&v1.Pod{

@@ -84,12 +84,18 @@ func (e *EndpointCore) DerivedFields() map[string]interface{} {
 
 // ExtraConfig returns a map of values to be considered when configuring a monitor
 func (e *EndpointCore) ExtraConfig() (map[string]interface{}, error) {
-	return utils.MergeInterfaceMaps(
-		map[string]interface{}{
-			"host": e.Host,
-			"port": e.Port,
-			"name": utils.FirstNonEmpty(e.Name, string(e.ID)),
-		}, e.Configuration), nil
+	vars := map[string]interface{}{
+		"name": utils.FirstNonEmpty(e.Name, string(e.ID)),
+		"host": e.Host,
+	}
+
+	// The discovered container might not have had a specified ports in which case we set
+	// the port to 0 so that the user can override the port inside the config.
+	if e.Port != 0 {
+		vars["port"] = e.Port
+	}
+
+	return utils.MergeInterfaceMaps(vars, e.Configuration), nil
 }
 
 // IsSelfConfigured tells whether this endpoint comes with enough configuration
