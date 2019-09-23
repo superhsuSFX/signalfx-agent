@@ -32,32 +32,28 @@ func datapointsForPod(pod *v1.Pod) ([]*datapoint.Datapoint, []*atypes.DimPropert
 	}
 
 	dimPropListForContainers := make([]*atypes.DimProperties, 0)
+	containersInPodByName := make(map[string]map[string]string)
 
 	for _, cs := range pod.Status.ContainerStatuses {
-		contDims := utils.CloneStringMap(dimensions)
-		contDims["container_id"] = stripContainerIDPrefix(cs.ContainerID)
-		contDims["container_spec_name"] = cs.Name
-		contDims["container_image"] = cs.Image
+		containerID := string(cs.ContainerID)
+		contDims := getAllContainerDimensions(containerID, cs.Name, cs.Image, dimensions)
 
-		dps = append(dps, datapoint.New(
-			"kubernetes.container_restart_count",
-			contDims,
-			datapoint.NewIntValue(int64(cs.RestartCount)),
-			datapoint.Gauge,
-			time.Now()))
+		containersInPodByName[cs.Name] = contDims
 
-		dps = append(dps, datapoint.New(
-			"kubernetes.container_ready",
-			contDims,
-			datapoint.NewIntValue(int64(utils.BoolToInt(cs.Ready))),
-			datapoint.Gauge,
-			time.Now()))
+		dps = append(dps, datapointsForContainerStatus(cs, contDims)...)
 
 		dimPropsForContainer := dimPropsForContainer(cs)
 
 		if dimPropsForContainer != nil {
 			dimPropListForContainers = append(dimPropListForContainers, dimPropsForContainer)
 		}
+
+	}
+
+	for _, c := range pod.Spec.Containers {
+		contDims := containersInPodByName[c.Name]
+
+		dps = append(dps, datapointsForContainerSpec(c, contDims)...)
 
 	}
 
