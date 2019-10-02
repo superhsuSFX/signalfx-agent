@@ -1,6 +1,7 @@
 package consul
 
 import (
+	"context"
 	"strings"
 	"time"
 
@@ -81,8 +82,9 @@ func (c *consulConfigSource) Get(path string) (map[string][]byte, uint64, error)
 		return nil, 0, err
 	}
 
-	pairs, meta, err := c.kv.List(prefix, nil)
-
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	pairs, meta, err := c.kv.List(prefix, (&api.QueryOptions{}).WithContext(ctx))
+	cancel()
 	if err != nil {
 		return nil, 0, err
 	}
