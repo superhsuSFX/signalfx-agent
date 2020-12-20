@@ -18,6 +18,8 @@ logging:
 # observers are what discover running services in the environment
 observers:
   - type: docker
+  
+traceEndpointUrl: "https://ingest.${SFX_REALM}.signalfx.com/v2/trace"
 
 monitors:
   - {"#from": "/etc/signalfx/monitors/*.yaml", flatten: true, optional: true}
@@ -33,5 +35,12 @@ monitors:
   - type: host-metadata
   - type: collectd/vmem
   - type: docker-container-stats
+  - type: signalfx-forwarder
+    listenAddress: 0.0.0.0:9080
+    defaultSpanTags:
+     environment: "${SFX_ENVIRONMENT}"
 
 enableBuiltInFiltering: true
+
+writer:
+  traceExportFormat: sapm
